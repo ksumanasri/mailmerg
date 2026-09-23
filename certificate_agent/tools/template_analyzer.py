@@ -3,15 +3,10 @@ import os
 import glob
 
 def find_serif_font():
-    fonts_dirs = [r"C:\Windows\Fonts"]
-    preferred_fonts = [
-        "georgia.ttf", "times.ttf", "liberationserif-regular.ttf", "dejavuserif.ttf"
-    ]
-    for d in fonts_dirs:
-        for p in preferred_fonts:
-            path = os.path.join(d, p)
-            if os.path.exists(path):
-                return path
+    current_dir = os.path.dirname(__file__)
+    font_path = os.path.join(current_dir, "..", "fonts", "Georgia.ttf")
+    if os.path.exists(font_path):
+        return font_path
     return None
 
 def analyze_template(template_path):
