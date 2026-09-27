@@ -1,25 +1,54 @@
+<div align="center">
+
 # Certificate Mail Merge
 
-Generate polished, personalized PDF certificates from one Excel workbook and a reusable certificate template.
+### Generate presentation-ready certificates from spreadsheet data in minutes.
+
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Streamlit](https://img.shields.io/badge/Built%20with-Streamlit-FF4B4B?logo=streamlit&logoColor=white)](https://streamlit.io/)
+[![PDF](https://img.shields.io/badge/PDF-PyMuPDF-0F766E)](https://pymupdf.readthedocs.io/)
+[![Tests](https://img.shields.io/badge/tests-3%20passing-16A34A)](#testing)
+
+Upload one student workbook and one certificate template. The app detects the data columns, fills each certificate, validates the output, and makes the PDFs available individually or as a ZIP download.
+
+[Quick Start](#quick-start) | [Input Format](#input-format) | [Testing](#testing)
+
+</div>
+
+## Preview
 
 ![Sample certificate template](Certificate.png)
 
-## What it does
+The included template demonstrates the supported completion-certificate layout: recipient name, institution, certificate ID, award date, and two calligraphic signature fields.
 
-The Streamlit app reads each student record, places the values into the certificate template, validates the generated PDF, and provides individual downloads plus a ZIP archive.
+## Highlights
 
-The current template fills:
+- **One-click batch generation:** create a certificate for every valid workbook row.
+- **Flexible column detection:** recognizes common registration, name, institution, and date header variations.
+- **Template-friendly output:** works with PDF, PNG, JPG, and JPEG templates.
+- **Professional typography:** adapts long names to the available space and uses calligraphic signatures when a suitable font is installed.
+- **Built-in quality control:** validates generated PDFs before marking them successful.
+- **Ready-to-download results:** download individual certificates, a ZIP archive, and a CSV generation report.
 
-- Student name
-- University or institution
-- Certificate ID
-- Award date
-- Left signature: John
-- Right signature: Moses
+## How it works
 
-Long names are resized to stay inside the certificate layout. Dates are normalized to `DD-MM-YYYY`.
+```text
+Student workbook + certificate template
+		  |
+		  v
+	Detect columns and read records
+		  |
+		  v
+       Place, resize, and style each field
+		  |
+		  v
+	  Validate and package PDFs
+		  |
+		  v
+	Individual files + ZIP + report
+```
 
-## Input format
+## Input Format
 
 Use an `.xlsx` or `.xls` workbook with these columns:
 
@@ -30,9 +59,11 @@ Use an `.xlsx` or `.xls` workbook with these columns:
 | `Graduated with honors from` | `Vignan University` |
 | `Awarded on` | `17-09-2026` |
 
-Common alternatives such as `Registration Number`, `Student Name`, `University`, `College`, `Institute`, `Award Date`, and `Awarded Date` are also detected automatically.
+The parser also recognizes alternatives such as `Registration Number`, `Registration No`, `Student Name`, `University`, `College`, `Institute`, `Award Date`, and `Awarded Date`.
 
-## Quick start
+Dates are normalized to `DD-MM-YYYY`. Generated files use the pattern `REG_NO_Name.pdf`, such as `2026002_Priya_Sharma.pdf`.
+
+## Quick Start
 
 ```bash
 git clone https://github.com/ksumanasri/mailmerg.git
@@ -46,30 +77,19 @@ Activate the environment:
 .venv\Scripts\Activate.ps1
 ```
 
-Install dependencies and start the app:
+Install dependencies and launch the application:
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-Open the local Streamlit URL, upload the student workbook and template, review the detected records, and select **Generate Certificates**.
+Then:
 
-## Supported templates
-
-The app accepts `.pdf`, `.png`, `.jpg`, and `.jpeg` certificate templates. The included `Certificate.png` shows the layout used by the coordinate-based sample generator.
-
-## Project structure
-
-```text
-app.py                              Streamlit interface
-certificate_agent/tools/            Excel, template, PDF, and report utilities
-Certificate.png                     Public sample template
-tests/                              Automated generation tests
-requirements.txt                    Python dependencies
-```
-
-Generated PDFs and reports are written to a session output directory by the web app. The command-line workflow in `certificate_agent/main.py` writes to `certificates/`.
+1. Upload the student workbook.
+2. Upload a `.pdf`, `.png`, `.jpg`, or `.jpeg` template.
+3. Review the detected records.
+4. Generate and download the certificates.
 
 ## Testing
 
@@ -79,16 +99,41 @@ Run the self-contained test suite from the project root:
 python -m unittest discover -s tests -v
 ```
 
-The tests cover Excel field mapping, date normalization, PDF generation, required output text, signatures, and font fallback behavior.
+The tests cover Excel field mapping, date normalization, PDF generation, required output text, signature rendering, and font fallback behavior.
 
-## Design details
+## Project Structure
 
-- PDF processing uses PyMuPDF.
-- Excel parsing uses pandas and openpyxl.
-- Signature rendering prefers an installed calligraphic font and falls back to an italic built-in font.
-- Generated PDFs are checked before they are reported as successful.
-- Output filenames follow the pattern `REG_NO_Name.pdf`, for example `2026002_Priya_Sharma.pdf`.
+```text
+app.py                              Streamlit application
+certificate_agent/main.py           Command-line generation workflow
+certificate_agent/tools/            Excel, template, PDF, and report utilities
+Certificate.png                     Public sample template
+tests/                              Automated generation tests
+requirements.txt                    Python dependencies
+packages.txt                        System packages for deployment
+```
 
-## Privacy and Git hygiene
+## Deployment
 
-Student workbooks and generated certificates may contain personal information. Do not commit them to GitHub. The repository ignores private Excel files, generated PDFs, previews, and temporary verification folders. Only the public sample template is included for demonstration.
+The app can be deployed on Streamlit Community Cloud:
+
+1. Push the repository to GitHub.
+2. Create a new Streamlit app from the repository.
+3. Select `app.py` as the main file.
+4. Deploy with `requirements.txt` and `packages.txt` available at the repository root.
+
+## Technical Notes
+
+- **Interface:** Streamlit
+- **Spreadsheet parsing:** pandas and openpyxl
+- **PDF generation and validation:** PyMuPDF
+- **Font behavior:** bundled Georgia for certificate text; installed calligraphic font when available; built-in italic fallback otherwise
+- **Output:** validated PDFs plus a CSV generation report
+
+## Privacy
+
+Student workbooks and generated certificates may contain personal information. Do not commit them to GitHub. The repository ignores Excel data, generated PDFs, rendered previews, and temporary verification folders. Only the public sample template is included for demonstration.
+
+## Contributing
+
+Keep changes focused, run the test suite before opening a pull request, and avoid committing private student data or generated output files.
