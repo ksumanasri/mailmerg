@@ -1,78 +1,94 @@
-# Automated Certificate Generation Agent
+# Certificate Mail Merge
 
-## Overview
-This project creates personalized student completion certificates from an Excel file and a certificate template. It is designed around the sample certificate layout shown in the repository: the generated PDF fills the name, university, certificate ID, and award date into the same blank positions used in the design.
+Generate polished, personalized PDF certificates from one Excel workbook and a reusable certificate template.
 
 ![Sample certificate template](Certificate.png)
 
-## Sample certificate layout
-The generator is tuned for the template used in this project, which follows this structure:
-- Title: CERTIFICATE OF COMPLETION
-- Intro text: This is to certify that
-- Student name line
-- Text: Graduated with honors from
-- University line
-- Center award seal: Awarded / year
+## What it does
+
+The Streamlit app reads each student record, places the values into the certificate template, validates the generated PDF, and provides individual downloads plus a ZIP archive.
+
+The current template fills:
+
+- Student name
+- University or institution
+- Certificate ID
+- Award date
 - Left signature: John
 - Right signature: Moses
-- Bottom left: Certificate ID
-- Bottom right: Awarded on
 
-## Required Excel columns
-The workbook should contain these headers:
-- Reg No
-- Name
-- Graduated with honors from
-- Awarded on
+Long names are resized to stay inside the certificate layout. Dates are normalized to `DD-MM-YYYY`.
 
-The parser also accepts common variations such as:
-- Registration Number / Registration No
-- Student Name
-- University / College / Institute
-- Award Date / Awarded Date
+## Input format
 
-## Features
-- Streamlit web interface for upload and generation
-- Automatic column detection for the sample certificate format
-- Support for `.pdf`, `.png`, `.jpg`, and `.jpeg` templates
-- Dynamic text placement with adjusted font sizing for longer names
-- Date normalization to `DD-MM-YYYY` format
-- PDF validation and generation report output
-- ZIP download of all generated certificate files
+Use an `.xlsx` or `.xls` workbook with these columns:
 
-## Folder structure
-- `app.py` – Streamlit app entry point
-- `certificate_agent/` – generator logic and utility modules
-- `certificates/` – generated PDFs and CSV report
-- `Certificate.png` – sample certificate template used for output layout
+| Column | Example |
+| --- | --- |
+| `Reg No` | `2026002` |
+| `Name` | `Priya Sharma` |
+| `Graduated with honors from` | `Vignan University` |
+| `Awarded on` | `17-09-2026` |
 
-## Installation
+Common alternatives such as `Registration Number`, `Student Name`, `University`, `College`, `Institute`, `Award Date`, and `Awarded Date` are also detected automatically.
+
+## Quick start
+
 ```bash
-pip install -r requirements.txt
+git clone https://github.com/ksumanasri/mailmerg.git
+cd mailmerg
+python -m venv .venv
 ```
 
-## Run locally
+Activate the environment:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+Install dependencies and start the app:
+
 ```bash
+pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Tests
-Run the focused test suite with:
+Open the local Streamlit URL, upload the student workbook and template, review the detected records, and select **Generate Certificates**.
+
+## Supported templates
+
+The app accepts `.pdf`, `.png`, `.jpg`, and `.jpeg` certificate templates. The included `Certificate.png` shows the layout used by the coordinate-based sample generator.
+
+## Project structure
+
+```text
+app.py                              Streamlit interface
+certificate_agent/tools/            Excel, template, PDF, and report utilities
+Certificate.png                     Public sample template
+tests/                              Automated generation tests
+requirements.txt                    Python dependencies
+```
+
+Generated PDFs and reports are written to a session output directory by the web app. The command-line workflow in `certificate_agent/main.py` writes to `certificates/`.
+
+## Testing
+
+Run the self-contained test suite from the project root:
+
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-## Usage
-1. Upload the Excel file with student details.
-2. Upload the certificate template image or PDF.
-3. Preview the detected records.
-4. Generate and download the final PDFs.
+The tests cover Excel field mapping, date normalization, PDF generation, required output text, signatures, and font fallback behavior.
 
-The app reads the student data and fills the blanks into the template positions automatically. The output files are saved in the `certificates/` folder.
+## Design details
 
-## Notes
-- The date field is normalized to `DD-MM-YYYY` to match the template style.
-- The generated filenames use the registration number and student name, for example `2026002_Priya_Sharma.pdf`.
-- The two signature blanks are filled consistently with `John` on the left and `Moses` on the right.
-- John and Moses use a calligraphic signature font when available on Windows, with an italic fallback on other platforms.
-- This project is intended for local generation and preview. Keep student data and generated PDFs out of source control if they are private.
+- PDF processing uses PyMuPDF.
+- Excel parsing uses pandas and openpyxl.
+- Signature rendering prefers an installed calligraphic font and falls back to an italic built-in font.
+- Generated PDFs are checked before they are reported as successful.
+- Output filenames follow the pattern `REG_NO_Name.pdf`, for example `2026002_Priya_Sharma.pdf`.
+
+## Privacy and Git hygiene
+
+Student workbooks and generated certificates may contain personal information. Do not commit them to GitHub. The repository ignores private Excel files, generated PDFs, previews, and temporary verification folders. Only the public sample template is included for demonstration.
