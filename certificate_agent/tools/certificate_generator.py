@@ -19,6 +19,7 @@ def generate_certificate(record, template_path, template_info, output_dir):
     page = doc[0]
     coords = template_info['coords']
     font_path = template_info['font_path']
+    signature_font_path = template_info.get('signature_font_path')
     
     if font_path and os.path.exists(font_path):
         page.insert_font(fontname="F0", fontfile=font_path)
@@ -31,30 +32,58 @@ def generate_certificate(record, template_path, template_info, output_dir):
         use_fontname = "times-roman"
         def get_len(t, s):
             return fitz.get_text_length(t, fontname=use_fontname, fontsize=s)
+
+    signature_fontname = 'times-italic'
+    signature_font = None
+    if signature_font_path and os.path.exists(signature_font_path):
+        page.insert_font(fontname='S0', fontfile=signature_font_path)
+        signature_fontname = 'S0'
+        signature_font = fitz.Font(fontfile=signature_font_path)
             
     def draw_text(key, text_val):
-        if not text_val: return
+        if not text_val:
+            return
+
         c = coords[key]
-        x, y, align, size = c['x'], c['y'], c['align'], c['size']
-        
-        tw = get_len(text_val, size)
-        
-        # Adaptive sizing for Name
-        if key == 'name':
-            max_w = template_info['width'] * 0.8
-            while tw > max_w and size > 20:
-                size -= 2
-                tw = get_len(text_val, size)
-                
+        x, y = c['x'], c['y']
+        align = c.get('align', 'center')
+        size = c.get('size', 28)
+        max_w = c.get('max_width', template_info['width'] * 0.8)
+        field_fontname = use_fontname
+        field_get_len = lambda text, fontsize: get_len(text, fontsize)
+
+        if key in {'left_signatory', 'right_signatory'}:
+            field_fontname = signature_fontname
+            if signature_font:
+                field_get_len = lambda text, fontsize: signature_font.text_length(
+                    text, fontsize=fontsize
+                )
+            else:
+                field_get_len = lambda text, fontsize: fitz.get_text_length(
+                    text, fontname=signature_fontname, fontsize=fontsize
+                )
+
+        tw = field_get_len(text_val, fontsize=size)
+        while tw > max_w and size > 18:
+            size -= 1
+            tw = field_get_len(text_val, fontsize=size)
+
         if align == 'center':
             draw_x = x - tw / 2
         else:
             draw_x = x
-            
-        page.insert_text(fitz.Point(draw_x, y), text_val, fontname=use_fontname, fontsize=size, color=(0,0,0))
 
+        page.insert_text(
+            fitz.Point(draw_x, y),
+            text_val,
+            fontname=field_fontname,
+            fontsize=size,
+            color=(0, 0, 0),
+        )
     draw_text('name', name)
     draw_text('university', univ)
+    draw_text('left_signatory', 'John')
+    draw_text('right_signatory', 'Moses')
     draw_text('reg_no', reg)
     draw_text('date', date)
         
