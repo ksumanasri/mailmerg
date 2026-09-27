@@ -3,6 +3,8 @@
 ## Overview
 This project creates personalized student completion certificates from an Excel file and a certificate template. It is designed around the sample certificate layout shown in the repository: the generated PDF fills the name, university, certificate ID, and award date into the same blank positions used in the design.
 
+![Sample certificate template](Certificate.png)
+
 ## Sample certificate layout
 The generator is tuned for the template used in this project, which follows this structure:
 - Title: CERTIFICATE OF COMPLETION
@@ -52,6 +54,12 @@ pip install -r requirements.txt
 ## Run locally
 ```bash
 streamlit run app.py
+```
+
+## Tests
+Run the focused test suite with:
+```bash
+python -m unittest discover -s tests -v
 ```
 
 ## Usage

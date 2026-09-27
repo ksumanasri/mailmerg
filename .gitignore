@@ -14,5 +14,14 @@ certificates/
 *.xlsx
 *.xls
 
-test_*.py
+# Public demo asset referenced by README.md
+!Certificate.png
+
+tests/__pycache__/
 *_rendered.png
+
+# Generated previews, verification runs, and private input data
+certificates_*/
+certificate_student_data.xlsx
+*.xlsx
+*.xls

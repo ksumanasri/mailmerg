@@ -1,6 +1,5 @@
 import fitz
 import os
-import glob
 
 def find_serif_font():
     current_dir = os.path.dirname(__file__)
@@ -11,12 +10,17 @@ def find_serif_font():
 
 
 def find_signature_font():
-    windows_dir = os.environ.get('WINDIR', r'C:\Windows')
-    font_dir = os.path.join(windows_dir, 'Fonts')
-    for filename in ('VIVALDII.TTF', 'KUNSTLER.TTF', 'BRUSHSCI.TTF', 'segoesc.ttf'):
-        signature_path = os.path.join(font_dir, filename)
-        if os.path.exists(signature_path):
-            return signature_path
+    font_dirs = [
+        os.path.join(os.environ.get('WINDIR', r'C:\Windows'), 'Fonts'),
+        os.path.join(os.environ.get('LOCALAPPDATA', ''), 'Microsoft', 'Windows', 'Fonts'),
+        '/usr/share/fonts/truetype/msttcorefonts',
+        '/Library/Fonts',
+    ]
+    for font_dir in font_dirs:
+        for filename in ('VIVALDII.TTF', 'KUNSTLER.TTF', 'BRUSHSCI.TTF', 'segoesc.ttf'):
+            signature_path = os.path.join(font_dir, filename)
+            if os.path.exists(signature_path):
+                return signature_path
     return None
 
 def analyze_template(template_path):
@@ -48,6 +52,6 @@ def analyze_template(template_path):
         'coords': coords,
         'is_image': template_path.lower().endswith(('.png', '.jpg', '.jpeg')),
         'pdf_bytes': doc.write() if template_path.lower().endswith(('.png', '.jpg', '.jpeg')) else None,
-        'font_path': font_path
-        , 'signature_font_path': signature_font_path
+        'font_path': font_path,
+        'signature_font_path': signature_font_path
     }

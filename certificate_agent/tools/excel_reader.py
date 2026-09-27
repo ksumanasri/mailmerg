@@ -14,7 +14,7 @@ def _normalize_date(value):
         return ""
 
     try:
-        parsed = pd.to_datetime(text)
+        parsed = pd.to_datetime(text, dayfirst=True)
         return parsed.strftime('%d-%m-%Y')
     except Exception:
         return text
